@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매장위치 - 새날기획</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script>
+    <style>
+        :root {
+            --primary-blue: #4A6FFF;
+            --deep-blue: #2E4BC7;
+            --text-dark: #1a1a1a;
+            --text-gray: #666;
+            --bg-light: #f8f9fa;
+            --max-width: 1200px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--text-dark);
+            background-color: #fff;
+            min-width: 320px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+            min-width: 320px;
+        }
+
+        .header-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+            min-width: 320px;
+        }
+
+        .logo {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 28px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--deep-blue));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: var(--primary-blue);
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans KR', sans-serif;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: var(--deep-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 111, 255, 0.3);
+        }
+
+        /* Main Content */
+        main {
+            margin-top: 70px;
+            padding: 60px 20px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .location-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .page-title h1 {
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .page-title p {
+            font-size: 18px;
+            color: var(--text-gray);
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .info-card h2 {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--primary-blue);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card h2 span {
+            font-size: 32px;
+        }
+
+        .info-item {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: var(--text-dark);
+            min-width: 80px;
+            font-size: 15px;
+        }
+
+        .info-value {
+            color: var(--text-gray);
+            font-size: 15px;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .info-value a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        /* Map Section */
+        .map-section {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 50px;
+        }
+
+        .map-section h2 {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 450px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            border: 2px dashed #ddd;
+        }
+
+        .map-placeholder span {
+            font-size: 64px;
+        }
+
+        .map-placeholder p {
+            font-size: 18px;
+            color: var(--text-gray);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* Transport Guide */
+        .transport-guide {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .transport-guide h2 {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .transport-methods {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .transport-item {
+            text-align: center;
+            padding: 30px 20px;
+            background: var(--bg-light);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .transport-item:hover {
+            background: #e8f0fe;
+            transform: translateY(-3px);
+        }
+
+        .transport-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .transport-item h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .transport-item p {
+            font-size: 14px;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* Parking Info */
+        .parking-info {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 50px;
+        }
+
+        .parking-info h2 {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .parking-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .parking-item {
+            text-align: center;
+            padding: 25px 20px;
+            background: var(--bg-light);
+            border-radius: 12px;
+        }
+
+        .parking-label {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 12px;
+        }
+
+        .parking-value {
+            font-size: 15px;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 15px;
+            }
+
+            .logo {
+                font-size: 22px;
+            }
+
+            .logo-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .back-btn {
+                font-size: 12px;
+                padding: 8px 14px;
+            }
+
+            main {
+                padding: 40px 15px;
+            }
+
+            .page-title h1 {
+                font-size: 32px;
+            }
+
+            .page-title p {
+                font-size: 15px;
+            }
+
+            .location-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .info-card {
+                padding: 30px 25px;
+            }
+
+            .info-card h2 {
+                font-size: 20px;
+            }
+
+            .info-card h2 span {
+                font-size: 26px;
+            }
+
+            .map-section {
+                padding: 30px 20px;
+            }
+
+            .map-section h2 {
+                font-size: 24px;
+            }
+
+            .map-placeholder {
+                height: 350px;
+            }
+
+            .map-placeholder span {
+                font-size: 48px;
+            }
+
+            .map-placeholder p {
+                font-size: 15px;
+                padding: 0 20px;
+            }
+
+            .transport-guide {
+                padding: 30px 20px;
+            }
+
+            .transport-guide h2 {
+                font-size: 24px;
+            }
+
+            .transport-methods {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .transport-item {
+                padding: 25px 20px;
+            }
+
+            .parking-info {
+                padding: 30px 20px;
+            }
+
+            .parking-info h2 {
+                font-size: 24px;
+            }
+
+            .parking-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title h1 {
+                font-size: 28px;
+            }
+
+            .info-label {
+                min-width: 70px;
+                font-size: 14px;
+            }
+
+            .info-value {
+                font-size: 14px;
+            }
+
+            .map-placeholder {
+                height: 300px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 60px 20px 30px;
+        }
+
+        .footer-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-section p,
+        .footer-section a {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            line-height: 1.8;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <a href="/saenal.github.io/" class="logo">
+                <div class="logo-icon">새</div>
+                새날기획
+            </a>
+            <a href="/saenal.github.io/" class="back-btn">
+                ← 홈으로
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="location-container">
+            <!-- Page Title -->
+            <div class="page-title">
+                <h1>매장 위치 안내</h1>
+                <p>새날기획을 방문해주셔서 감사합니다</p>
+            </div>
+
+            <!-- Map Section -->
+            <div class="map-section">
+                <h2>오시는 길</h2>
+                <div id="map" style="width:100%;height:450px;border-radius:12px;"></div>
+            </div>
+
+            <!-- Parking Info -->
+            <div class="parking-info">
+                <h2>🚗 주차 안내</h2>
+                <div class="parking-grid">
+                    <div class="parking-item">
+                        <div class="parking-label">주차장 위치</div>
+                        <div class="parking-value">건물 지하 1층 ~ 지하 3층</div>
+                    </div>
+                    <div class="parking-item">
+                        <div class="parking-label">주차 요금</div>
+                        <div class="parking-value">방문 고객 2시간 무료</div>
+                    </div>
+                    <div class="parking-item">
+                        <div class="parking-label">입구 안내</div>
+                        <div class="parking-value">건물 후면 지하 주차장 입구</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transport Guide -->
+            <div class="transport-guide">
+                <h2>대중교통 이용 안내</h2>
+                <div class="transport-methods">
+                    <div class="transport-item">
+                        <div class="transport-icon">🚇</div>
+                        <h3>지하철</h3>
+                        <p>2호선 강남역 3번 출구<br>도보 5분 거리</p>
+                    </div>
+                    <div class="transport-item">
+                        <div class="transport-icon">🚌</div>
+                        <h3>버스</h3>
+                        <p>강남역 정류장 하차<br>간선: 146, 740, 341<br>지선: 3412, 4319</p>
+                    </div>
+                    <div class="transport-item">
+                        <div class="transport-icon">🚗</div>
+                        <h3>자가용</h3>
+                        <p>강남대로 이용<br>테헤란로 방면<br>건물 지하 주차장 이용</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>새날기획</h3>
+                <p>대표이사: 홍길동</p>
+                <p>사업자등록번호: 123-45-67890</p>
+                <p>통신판매업신고: 2024-서울-0000</p>
+            </div>
+            <div class="footer-section">
+                <h3>고객센터</h3>
+                <p>전화: 02-1234-5678</p>
+                <p>팩스: 02-1234-5679</p>
+                <p>이메일: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ef86818980af9c8e8a818e83848684988e84c18c8082">[email&#160;protected]</a></p>
+                <p>평일 09:00 - 18:00 (주말/공휴일 휴무)</p>
+            </div>
+            <div class="footer-section">
+                <h3>오시는 길</h3>
+                <p>서울특별시 강남구 테헤란로 123 (우: 06234)</p>
+                <p>새날빌딩 5층</p>
+                <p>지하철 2호선 강남역 3번 출구</p>
+            </div>
+            <div class="footer-section">
+                <h3>이용안내</h3>
+                <a href="#">이용약관</a>
+                <a href="#">개인정보처리방침</a>
+                <a href="#">주문/배송 안내</a>
+                <a href="#">환불/교환 정책</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 새날기획. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // 네이버 지도 초기화
+        // 참고: 실제 사용 시 YOUR_CLIENT_ID를 네이버 클라우드 플랫폼에서 발급받은 Client ID로 교체해야 합니다.
+        
+        window.onload = function() {
+            // 네이버 지도 API가 로드되었는지 확인
+            if (typeof naver !== 'undefined' && naver.maps) {
+                var mapOptions = {
+                    center: new naver.maps.LatLng(37.4979, 127.0276), // 강남역 좌표 (실제 주소 좌표로 변경 필요)
+                    zoom: 17,
+                    mapTypeControl: true
+                };
+
+                var map = new naver.maps.Map('map', mapOptions);
+
+                // 마커 추가
+                var marker = new naver.maps.Marker({
+                    position: new naver.maps.LatLng(37.4979, 127.0276),
+                    map: map,
+                    title: '새날기획'
+                });
+
+                // 정보창 추가
+                var contentString = [
+                    '<div style="padding:20px;min-width:200px;line-height:1.5;">',
+                    '   <h3 style="margin:0 0 10px 0;font-size:16px;font-weight:bold;">새날기획</h3>',
+                    '   <p style="margin:0;font-size:13px;color:#666;">서울특별시 강남구 테헤란로 123</p>',
+                    '   <p style="margin:5px 0 0 0;font-size:13px;color:#666;">새날빌딩 5층</p>',
+                    '</div>'
+                ].join('');
+
+                var infowindow = new naver.maps.InfoWindow({
+                    content: contentString,
+                    maxWidth: 300,
+                    backgroundColor: "#fff",
+                    borderColor: "#4A6FFF",
+                    borderWidth: 2,
+                    anchorSize: new naver.maps.Size(10, 10),
+                    anchorSkew: true,
+                    anchorColor: "#fff",
+                    pixelOffset: new naver.maps.Point(0, -10)
+                });
+
+                // 마커 클릭 시 정보창 표시
+                naver.maps.Event.addListener(marker, "click", function(e) {
+                    if (infowindow.getMap()) {
+                        infowindow.close();
+                    } else {
+                        infowindow.open(map, marker);
+                    }
+                });
+
+                // 페이지 로드 시 정보창 자동 표시
+                infowindow.open(map, marker);
+            } else {
+                // API가 로드되지 않은 경우 안내 메시지 표시
+                document.getElementById('map').innerHTML = 
+                    '<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:20px;background:#f8f9fa;">' +
+                    '<span style="font-size:64px;">🗺️</span>' +
+                    '<p style="font-size:16px;color:#666;text-align:center;line-height:1.6;">' +
+                    '서울특별시 강남구 테헤란로 123<br>새날빌딩 5층<br><br>' +
+   
