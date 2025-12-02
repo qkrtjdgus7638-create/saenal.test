@@ -65,6 +65,8 @@
             gap: 8px;
             transition: transform 0.3s ease;
             flex-shrink: 0;
+            padding: 0;
+            margin: 0;
         }
 
         .logo:hover {
@@ -99,6 +101,7 @@
             transition: all 0.3s ease;
             font-family: 'Noto Sans KR', sans-serif;
             text-decoration: none;
+            margin: 0;
         }
 
         .back-btn:hover {
@@ -344,22 +347,24 @@
         /* Responsive */
         @media (max-width: 768px) {
             .header-container {
-                padding: 0 15px;
+                padding: 0 20px;
             }
 
             .logo {
                 font-size: 22px;
+                margin-left: 0;
+            }
+
+            .back-btn {
+                font-size: 12px;
+                padding: 8px 14px;
+                margin-right: 0;
             }
 
             .logo-icon {
                 width: 35px;
                 height: 35px;
                 font-size: 16px;
-            }
-
-            .back-btn {
-                font-size: 12px;
-                padding: 8px 14px;
             }
 
             main {
@@ -444,6 +449,27 @@
         }
 
         @media (max-width: 480px) {
+            .header-container {
+                padding: 0 15px;
+            }
+
+            .logo {
+                font-size: 20px;
+                margin-left: 0;
+            }
+
+            .back-btn {
+                font-size: 11px;
+                padding: 6px 10px;
+                margin-right: 0;
+            }
+
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
             .page-title h1 {
                 font-size: 28px;
             }
@@ -511,11 +537,11 @@
     <!-- Header -->
     <header>
         <div class="header-container">
-            <a href="/saenal.github.io/" class="logo">
+            <a href="index.html" class="logo">
                 <div class="logo-icon">새</div>
                 새날기획
             </a>
-            <a href="/saenal.github.io/" class="back-btn">
+            <a href="index.html" class="back-btn">
                 ← 홈으로
             </a>
         </div>
@@ -675,4 +701,3 @@
                     '<span style="font-size:64px;">🗺️</span>' +
                     '<p style="font-size:16px;color:#666;text-align:center;line-height:1.6;">' +
                     '서울특별시 강남구 테헤란로 123<br>새날빌딩 5층<br><br>' +
-   
